@@ -40,7 +40,7 @@ forecast_set = clf.predict(X_lately)
 
 print(accuracy, '\n', forecast_set)
 
-# если поймешь че тут дальше происходит расскажи мне
+# если поймешь че тут дальше происходит расскажи мне (это все чисто для графика нужно так что я не особо пытался разобраться)
 last_date = df.iloc[-1].name
 last_unix = last_date.timestamp()
 one_day = 86400
