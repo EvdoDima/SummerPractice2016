@@ -14,15 +14,14 @@ style.use('ggplot')
 df = qd.get('LBMA/GOLD', authtoken="-q7sQoHnvKQEyMbu4qqR")
 
 df['cur day'] = df['USD (AM)']
-df['-1 day'] = df['USD (AM)'].shift(1)
-df['-2 day'] = df['USD (AM)'].shift(2)
-df['-3 day'] = df['USD (AM)'].shift(3)
-df['-4 day'] = df['USD (AM)'].shift(4)
-df['-5 day'] = df['USD (AM)'].shift(5)
+df = df[['cur day']]
+
+feauture_length = 5  # магия - чем меньше, тем точнее
+for i in range(1, feauture_length):
+    df['-' + str(i) + ' day'] = df['cur day'].shift(i)
 
 forecast_time = 1
 
-df = df[['cur day', '-1 day', '-2 day', '-3 day', '-4 day', '-5 day']]
 df['label'] = df['cur day'].shift(-forecast_time)
 df.dropna(inplace=True)
 
@@ -31,7 +30,7 @@ df.dropna(inplace=True)
 X = np.array(df.drop('label', axis=1))
 y = df['label']
 
-test_time = 10
+test_time = 300
 X = preprocessing.scale(X)
 X_lately = X[-test_time:]
 X = X[:-test_time]
@@ -45,13 +44,22 @@ X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_
 # y_test.dropna(inplace=True)
 # X_test = X_test[:-forecast_time]
 
-clf = LinearRegression()
+clf = svm.SVR()
 clf.fit(X_train, y_train)
 accuracy = clf.score(X_test, y_test)
-############################################
-# print('X =', len(X), 'X_lately =', len(X_lately), 'df =',len(df))
+###########################################################################
 print(accuracy)
-
 forecast_set = clf.predict(X_lately)
-print(forecast_set)
-print(y_lately)
+
+result = df.tail(test_time)
+result['Forecast'] = forecast_set
+result['Real'] = result['cur day']
+
+result['Forecast'].plot()
+result['Real'].plot()
+
+plt.legend(loc=4)
+plt.xlabel('Date')
+plt.ylabel('Price')
+
+plt.show()
