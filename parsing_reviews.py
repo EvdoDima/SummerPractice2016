@@ -13,7 +13,8 @@ def get_table(r):
     cells = table.findAll('td')
     for cell in cells:
         if 'td bgcolor' in str(cell):
-            data.append(unicodedata.normalize('NFKD', cell.text.replace(',', '_')))
+            cell_data = cell.text.replace(',', '_').replace('\n', '').replace('\r','')
+            data.append(unicodedata.normalize('NFKD', cell_data))
     return data
 
 
@@ -27,9 +28,11 @@ print(links.head())
 
 outpath = '/Users/evdodima/workspace/Python/ML/out/drugs'
 
+links = links[::-1]
+
 for index, link in links.iterrows():
     print(link['url'])
-    r,proxies = get_response(link['url'], user_agents, proxies, keyword='ratingsTable')
+    r, proxies = get_response(link['url'], user_agents, proxies, keyword='ratingsTable')
     data = get_table(r)
     data = np.array(data)
     data = np.reshape(data, (-1, 8))

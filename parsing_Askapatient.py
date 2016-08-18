@@ -40,23 +40,22 @@ def LoadProxies():
 
 
 def get_response(url, user_agents, proxies, keyword='table'):
-    MAX_WAIT = 10
+    MAX_WAIT = 7
     headers = {
         'user-agent': random.choice(user_agents),
         "Connection": "close",
-        'Cookie': '__utmz=183609910.1471172088.1.1.utmccn=(referral)|utmcsr=google.ru|utmcct=/|utmcmd=referral; ASPSESSIONIDSQQASABD=GCNIDKCBGNHPANIIEBJEMHAF; ASPSESSIONIDSQQBQCBC=GILLBGPBDNEMPKDDCLNAMDAG; __utma=183609910.1338363169.1471172088.1471450935.1471454680.8; __utmc=183609910; D_ZID=8D3FB4D9-86DF-3264-82D0-668C3F6A67EE; D_ZUID=02E07275-D545-34AF-8D38-C3ACAB8E30DE; __utmb=183609910; __atuvc=24%7C33; __atuvs=57b49dd7766c2847002; D_PID=F3F1AE20-D4CC-33C3-854A-1209E349330F; D_IID=B1C87246-9BAF-3781-BEE4-5476591A3FE5; D_UID=B4B3E55C-D8D3-37AD-B93F-109962C5AE57; D_HID=qhMWGl7HlD7aRi4u8LUWqHMzjnlB5iHb0l3s0PJ1wxc'
     }
 
-    proxy = random.choice(proxies)
+    proxy = proxies[0]
     r = None
-
     while True:
         try:
-            # print('parsing ' + url[-1] + ' ' + proxy)
+            print(proxy)
             r = requests.get(url, proxies={'http': proxy}, headers=headers, timeout=3)
             if not keyword in r.text:
                 raise Exception()
             sleep(MAX_WAIT * random.random())
+            proxies.append(proxy)
             break
         except:
             print('proxy failed')
@@ -64,7 +63,8 @@ def get_response(url, user_agents, proxies, keyword='table'):
             if not proxies:
                 print('reloading proxies...')
                 proxies = LoadProxies()
-            proxy = random.choice(proxies)
+            proxy = proxies[0]
+            headers['user-agent'] = random.choice(user_agents)
 
     return r, proxies
 
