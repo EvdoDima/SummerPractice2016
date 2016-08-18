@@ -19,26 +19,24 @@ def get_table(r):
 
 user_agents = LoadUserAgents()
 proxies = LoadProxies()
-proxy = random.choice(proxies)
-
-print(proxies)
 
 links = pd.read_csv('/Users/evdodima/workspace/Python/ML/out/links.csv')
 links['url'] = 'http://www.askapatient.com/' + links['url']
 
-print(links)
+print(links.head())
 
 outpath = '/Users/evdodima/workspace/Python/ML/out/drugs'
 
 for index, link in links.iterrows():
     print(link['url'])
-    r = get_response(link['url'], user_agents, proxies)
+    r,proxies = get_response(link['url'], user_agents, proxies, keyword='ratingsTable')
     data = get_table(r)
     data = np.array(data)
     data = np.reshape(data, (-1, 8))
     df = pd.DataFrame(data=data,
                       columns=['Rating', 'Reason', 'Side Effects', 'Comments',
                                'Sex', 'Age', 'Duration/Dosage', 'Date Added'])
+    df['Drug Name'] = link['name'].capitalize()
 
     # Save comments for individual drug as csv
     df.to_csv(outpath + '/' + link['name'].replace('/', '_') + '.csv')
