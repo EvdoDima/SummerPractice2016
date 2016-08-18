@@ -27,46 +27,59 @@ def LoadUserAgents(uafile='user_agents.txt'):
 
 
 def LoadProxies():
-    r = requests.get('http://hideme.ru/proxy-list/')
-    rex = re.compile("<td class=tdl>((\d{1,4}\.){3}\d{1,4})<\/td><td>(\d{2,4})<\/td>")
-    proxies = [proxy[0] + ':' + proxy[2] for proxy in rex.findall(r.text)]
-    # with open('proxy.txt', 'rb') as uaf:
-    #     for ua in uaf.readlines():
-    #         if ua:
-    #             proxies.append(ua.strip())
+    # r = requests.get('http://hideme.ru/proxy-list/')
+    # rex = re.compile("<td class=tdl>((\d{1,4}\.){3}\d{1,4})<\/td><td>(\d{2,4})<\/td>")
+    # proxies = [proxy[0] + ':' + proxy[2] for proxy in rex.findall(r.text)]
+    proxies = []
+    with open('proxy.txt', 'rb') as uaf:
+        for ua in uaf.readlines():
+            if ua:
+                proxies.append(ua.strip())
     random.shuffle(proxies)
-    print(proxies)
     return proxies
 
+proxies = LoadProxies()
 
-def get_response(url, user_agents, proxies, keyword='table'):
+def get_response(url, user_agents, proxy, keyword='table'):
     MAX_WAIT = 7
     headers = {
         'user-agent': random.choice(user_agents),
-        "Connection": "close",
+        "Connection": "close"
     }
 
-    proxy = proxies[0]
     r = None
     while True:
         try:
             print(proxy)
             r = requests.get(url, proxies={'http': proxy}, headers=headers, timeout=3)
-            if not keyword in r.text:
-                raise Exception()
-            sleep(MAX_WAIT * random.random())
-            proxies.append(proxy)
-            break
-        except:
-            print('proxy failed')
-            proxies.remove(proxy)
-            if not proxies:
-                print('reloading proxies...')
-                proxies = LoadProxies()
-            proxy = proxies[0]
-            headers['user-agent'] = random.choice(user_agents)
 
-    return r, proxies
+            print(r.status_code)
+            r.raise_for_status()
+
+            if not keyword in r.text:
+                print(keyword + " not present")
+                raise Exception()
+            # sleep(MAX_WAIT * random.random())
+            # proxies.append(proxy)
+            break
+
+        except requests.exceptions.HTTPError as e:
+            # Need to check its an 404, 503, 500, 403 etc.
+            status_code = e.response.status_code
+            if status_code == 404:
+                print("breaking")
+                break
+            else:
+                proxy = random.choice(proxies)
+                proxies.remove(proxy)
+
+        except:
+            # print('proxy failed')
+            proxy = random.choice(proxies)
+            proxies.remove(proxy)
+            # headers['user-agent'] = random.choice(user_agents)
+
+    return r, proxy
 
 
 if __name__ == '__main__':
@@ -84,5 +97,5 @@ if __name__ == '__main__':
         print(links.tail())
 
     links.columns = ['name', 'url']
-    outpath = '/Users/evdodima/workspace/Python/ML/out'
+    outpath = '/out'
     links.to_csv(outpath + '/' + "links.csv")

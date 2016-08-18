@@ -4,7 +4,7 @@ import numpy as np
 import bs4 as BeautifulSoup
 import unicodedata
 from parsing_Askapatient import LoadUserAgents, get_response, LoadProxies
-
+import os
 
 def get_table(r):
     data = []
@@ -20,26 +20,30 @@ def get_table(r):
 
 user_agents = LoadUserAgents()
 proxies = LoadProxies()
+proxy = random.choice(proxies)
 
-links = pd.read_csv('/Users/evdodima/workspace/Python/ML/out/links.csv')
-links['url'] = 'http://www.askapatient.com/' + links['url']
+links = pd.read_csv('out/links.csv')
+# http://webcache.googleusercontent.com/search?q=cache:
+links['url'] = 'http://www.askapatient.com/' + links['url'] + "&page=1&PerPage=10000"
 
-print(links.head())
+outpath = 'out/drugs'
 
-outpath = '/Users/evdodima/workspace/Python/ML/out/drugs'
-
+links = links[:1850]
 links = links[::-1]
 
 for index, link in links.iterrows():
     print(link['url'])
-    r, proxies = get_response(link['url'], user_agents, proxies, keyword='ratingsTable')
-    data = get_table(r)
-    data = np.array(data)
-    data = np.reshape(data, (-1, 8))
-    df = pd.DataFrame(data=data,
-                      columns=['Rating', 'Reason', 'Side Effects', 'Comments',
-                               'Sex', 'Age', 'Duration/Dosage', 'Date Added'])
-    df['Drug Name'] = link['name'].capitalize()
+    r, succProxy = get_response(link['url'], user_agents, proxy, keyword='ratingsTable')
+    proxy = succProxy
 
-    # Save comments for individual drug as csv
-    df.to_csv(outpath + '/' + link['name'].replace('/', '_') + '.csv')
+    if r:
+
+        data = get_table(r)
+        data = np.array(data).reshape(data, (1, int(len(data))))
+        df = pd.DataFrame(data=data,
+                          columns=['Rating', 'Reason', 'Side Effects', 'Comments',
+                                   'Sex', 'Age', 'Duration/Dosage', 'Date Added'])
+        df['Drug Name'] = link['name'].capitalize()
+
+        # Save comments for individual drug as csv
+        df.to_csv(outpath + '/' + link['name'].replace('/', '_') + '.csv', encoding='utf-8')
