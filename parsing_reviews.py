@@ -28,18 +28,23 @@ links['url'] = 'http://www.askapatient.com/' + links['url'] + "&page=1&PerPage=1
 
 outpath = 'out/drugs'
 
-links = links[:1850]
+links = links[:1650]
 links = links[::-1]
 
 for index, link in links.iterrows():
-    print(link['url'])
+    print(str(index) + ' - ' + link['url'])
     r, succProxy = get_response(link['url'], user_agents, proxy, keyword='ratingsTable')
     proxy = succProxy
 
     if r:
 
         data = get_table(r)
-        data = np.array(data).reshape(data, (1, int(len(data))))
+        data = np.array(data)
+        try: 
+            data = np.reshape(data, (-1, 8))
+        except: 
+            continue
+
         df = pd.DataFrame(data=data,
                           columns=['Rating', 'Reason', 'Side Effects', 'Comments',
                                    'Sex', 'Age', 'Duration/Dosage', 'Date Added'])

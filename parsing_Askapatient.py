@@ -68,6 +68,7 @@ def get_response(url, user_agents, proxy, keyword='table'):
             status_code = e.response.status_code
             if status_code == 404:
                 print("breaking")
+                proxy = random.choice(proxies)
                 break
             else:
                 proxy = random.choice(proxies)
@@ -76,8 +77,8 @@ def get_response(url, user_agents, proxy, keyword='table'):
         except:
             # print('proxy failed')
             proxy = random.choice(proxies)
-            proxies.remove(proxy)
-            # headers['user-agent'] = random.choice(user_agents)
+            # proxies.remove(proxy)
+            headers['user-agent'] = random.choice(user_agents)
 
     return r, proxy
 
