@@ -29,17 +29,24 @@ def count_words(df):
             else:
                 words[word] = 1
 
-    return words
+    sorted_words = sorted(words.items(), key=operator.itemgetter(1), reverse=True)
+    MIN_WORD_COUNT = 2
+    sorted_words = [word for word in sorted_words if word[1] > MIN_WORD_COUNT]
+
+    return sorted_words
+
+
 
 
 df = pd.DataFrame.from_csv('out/merged_input.csv', parse_dates=False)
-df = df.drop(['Date Added', 'Rating'], axis=1)
+df = df.drop(['Date Added'], axis=1)
 df = df.dropna()
-# shuffled_df = df.iloc[np.random.permutation(len(df))]
-words = count_words(df)
-sorted_words = sorted(words.items(), key=operator.itemgetter(1), reverse=True)
 
-MIN_WORD_COUNT = 2
-sorted_words = [word for word in sorted_words if word[1] > MIN_WORD_COUNT]
-print(len(sorted_words))
-print(sorted_words)
+# words = count_words(df)
+# words_df = pd.DataFrame(words)
+# words_df.to_csv('out/words.csv')
+
+words_from = pd.DataFrame.from_csv('out/words.csv')
+
+
+print(words_from.head())
