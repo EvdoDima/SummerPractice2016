@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 import time
-import numpy as np
 import operator
 import re
 
@@ -21,7 +20,8 @@ def parse_csv_dir(dir):
 
 def count_words(df):
     words = {}
-    for review in df['Comments']:
+    df['Review'] = df['Comments']+' '+df['Side Effects']
+    for review in df['Review']:
         review = review.lower()
         for word in re.sub("[^\w]|_", " ", review).split():
             if word in words.keys():
@@ -37,6 +37,9 @@ df = df.drop(['Date Added', 'Rating'], axis=1)
 df = df.dropna()
 # shuffled_df = df.iloc[np.random.permutation(len(df))]
 words = count_words(df)
-sorted_words = sorted(words.items(), key=operator.itemgetter(1),reverse=True)
+sorted_words = sorted(words.items(), key=operator.itemgetter(1), reverse=True)
+
+MIN_WORD_COUNT = 2
+sorted_words = [word for word in sorted_words if word[1] > MIN_WORD_COUNT]
 print(len(sorted_words))
 print(sorted_words)
