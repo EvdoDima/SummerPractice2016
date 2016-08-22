@@ -3,6 +3,8 @@ import os
 import time
 import operator
 import re, string
+import re
+import math
 
 input_dir = 'out/drugs/'
 
@@ -50,6 +52,8 @@ def prepare_dataset(words, df):
 
 
 df = pd.DataFrame.from_csv('out/merged_input.csv', parse_dates=False)
+df['Review'] = df['Comments'] + ' ' + df['Side Effects']
+
 df = df.drop(['Date Added'], axis=1)
 df = df.dropna()
 df['Review'] = df['Comments'] + ' ' + df['Side Effects']
@@ -59,7 +63,30 @@ df['Review'] = df['Comments'] + ' ' + df['Side Effects']
 # words_df.columns = ['Word', 'Count']
 # words_df.to_csv('out/words.csv')
 
+m_rev = df[df['Sex'] == 'M']['Review']
+f_rev = df[df['Sex'] == 'F']['Review']
+
+m_rev_len = len(m_rev)
+f_rev_len = len(f_rev)
+
+m_rev_concat = " ".join(m_rev)
+f_rev_concat = " ".join(f_rev)
+
+def tf_idf(df):
+    
+    res = []
+    for w, c in zip(df["Word"], df["Count"]):
+        num = f_rev_len * m_rev_concat.count(w)
+        den = m_rev_len * f_rev_concat.count(w)
+        if den == 0 or num == 0:
+            continue
+        com = float(num) / den
+        res = c * math.log(com)
+        print(res)
+    return res
+
 words_from = pd.DataFrame.from_csv('out/words.csv')
+words_from["Weight"] = tf_idf(words_from)
 
 dataset = prepare_dataset(words_from[:100], df)
 dataset = dataset.drop(['Rating','Reason','Side Effects','Comments','Duration/Dosage','Drug Name','Review'],axis=1)
