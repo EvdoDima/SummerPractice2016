@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import time
 import operator
-import re
+import re, string
 
 input_dir = 'out/drugs/'
 
@@ -36,9 +36,23 @@ def count_words(df):
     return sorted_words
 
 
+def prepare_dataset(words, df):
+
+    df = df[100:110]
+    print(words['Word'].tolist())
+    for word in words['Word'].tolist():
+        df[word] = df['Review'].apply(str.count, args=[word])
+
+    # for index, data in df[-10:].iterrows():
+    #     result_set = result_set.append([]+[data['Review'].count(word) for word in words] + [data['Sex']],
+    #                                    ignore_index=True)
+    return df
+
+
 df = pd.DataFrame.from_csv('out/merged_input.csv', parse_dates=False)
 df = df.drop(['Date Added'], axis=1)
 df = df.dropna()
+df['Review'] = df['Comments'] + ' ' + df['Side Effects']
 
 # words = count_words(df)
 # words_df = pd.DataFrame(words)
@@ -47,4 +61,7 @@ df = df.dropna()
 
 words_from = pd.DataFrame.from_csv('out/words.csv')
 
-print(words_from.head())
+dataset = prepare_dataset(words_from[:100], df)
+dataset = dataset.drop(['Rating','Reason','Side Effects','Comments','Duration/Dosage','Drug Name','Review'],axis=1)
+
+print(dataset.head())
