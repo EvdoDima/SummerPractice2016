@@ -47,6 +47,25 @@ def prepare_dataset(words, df):
     return df
 
 
+def parse_and_write_words():
+    words = count_words(df)
+    words_df = pd.DataFrame(words)
+    words_df.columns = ['Word', 'Count']
+    words_df.to_csv('out/words.csv')
+
+
+
+def get_and_weight_words():
+    words_from = pd.DataFrame.from_csv('out/words.csv')
+    # words_from["Weight"] = tf_idf(words_from)
+    words_from["Weight"] = words_from.apply(tf_idf, axis=1)
+    words_from["Weight_Abs"] = words_from['Weight'].apply(abs)
+    # scaler = preprocessing.MaxAbsScaler()
+    # words_from["Weight_Scaled"] = scaler.fit_transform(words_from['Weight'])
+    words_from.sort_values('Weight_Abs', axis=0, inplace=True)
+    return words_from
+
+
 df = pd.DataFrame.from_csv('out/merged_input.csv', parse_dates=False)
 df['Review'] = df['Comments'] + ' ' + df['Side Effects']
 
@@ -54,10 +73,7 @@ df = df.drop(['Date Added'], axis=1)
 df = df.dropna()
 df['Review'] = df['Comments'] + ' ' + df['Side Effects']
 
-# words = count_words(df)
-# words_df = pd.DataFrame(words)
-# words_df.columns = ['Word', 'Count']
-# words_df.to_csv('out/words.csv')
+
 
 m_rev = df[df['Sex'] == 'M']['Review']
 f_rev = df[df['Sex'] == 'F']['Review']
@@ -84,21 +100,10 @@ def tf_idf(word):
     return res
 
 
-words_from = pd.DataFrame.from_csv('out/words.csv')
-# words_from["Weight"] = tf_idf(words_from)
-
-words_from["Weight"] = words_from.apply(tf_idf, axis=1)
-words_from["Weight_Abs"] = words_from['Weight'].apply(abs)
-
-# scaler = preprocessing.MaxAbsScaler()
-# words_from["Weight_Scaled"] = scaler.fit_transform(words_from['Weight'])
-
-words_from.sort_values('Weight_Abs', axis=0, inplace=True)
-
-words_from.to_csv('out/weighted_words.csv')
+words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
 
 # dataset = prepare_dataset(words_from[:100], df)
 # dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
 #                        axis=1)
 
-print(words_from[::100])
+print(words_wieghted[::100])
