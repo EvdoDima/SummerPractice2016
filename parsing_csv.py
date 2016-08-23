@@ -1,10 +1,6 @@
 import pandas as pd
-import os
-import time
-import operator
-import re, string
-import re
-import math
+import os, time, operator, re, math
+from sklearn import preprocessing
 
 input_dir = 'out/drugs/'
 
@@ -25,23 +21,23 @@ def count_words(df):
     df['Review'] = df['Comments'] + ' ' + df['Side Effects']
     for review in df['Review']:
         review = review.lower()
-        for word in re.sub("[^a-zA-Z]|_", " ", review).split():
+        for word in re.sub("[^a-zA-Z']|_", " ", review).split():
             if word in words.keys():
                 words[word] += 1
             else:
                 words[word] = 1
 
     sorted_words = sorted(words.items(), key=operator.itemgetter(1), reverse=True)
-    MIN_WORD_COUNT = 2
-    sorted_words = [word for word in sorted_words if word[1] > MIN_WORD_COUNT]
+    MIN_WORD_COUNT = 13
+    sorted_words = [word for word in sorted_words if word[1] >= MIN_WORD_COUNT]
 
     return sorted_words
 
 
 def prepare_dataset(words, df):
-
     df = df[100:110]
     print(words['Word'].tolist())
+
     for word in words['Word'].tolist():
         df[word] = df['Review'].apply(str.count, args=[word])
 
@@ -72,23 +68,37 @@ f_rev_len = len(f_rev)
 m_rev_concat = " ".join(m_rev)
 f_rev_concat = " ".join(f_rev)
 
-def tf_idf(df):
-    
-    res = []
-    for w, c in zip(df["Word"], df["Count"]):
-        num = f_rev_len * m_rev_concat.count(w)
-        den = m_rev_len * f_rev_concat.count(w)
-        if den == 0 or num == 0:
-            continue
-        com = float(num) / den
-        res = c * math.log(com)
-        print(res)
+
+def tf_idf(word):
+    w = word['Word']
+    # c = word['Count']
+    num = f_rev_len * m_rev_concat.count(w)
+    den = m_rev_len * f_rev_concat.count(w)
+    if den == 0 or num == 0:
+        return 0
+    com = float(num) / den
+    # res = c * math.log(com)
+    res = math.log(com)
+
+    print(res)
     return res
 
+
 words_from = pd.DataFrame.from_csv('out/words.csv')
-words_from["Weight"] = tf_idf(words_from)
+# words_from["Weight"] = tf_idf(words_from)
 
-dataset = prepare_dataset(words_from[:100], df)
-dataset = dataset.drop(['Rating','Reason','Side Effects','Comments','Duration/Dosage','Drug Name','Review'],axis=1)
+words_from["Weight"] = words_from.apply(tf_idf, axis=1)
+words_from["Weight_Abs"] = words_from['Weight'].apply(abs)
 
-print(dataset.head())
+# scaler = preprocessing.MaxAbsScaler()
+# words_from["Weight_Scaled"] = scaler.fit_transform(words_from['Weight'])
+
+words_from.sort_values('Weight_Abs', axis=0, inplace=True)
+
+words_from.to_csv('out/weighted_words.csv')
+
+# dataset = prepare_dataset(words_from[:100], df)
+# dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
+#                        axis=1)
+
+print(words_from[::100])
