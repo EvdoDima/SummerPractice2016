@@ -34,17 +34,14 @@ def count_words(df):
     return sorted_words
 
 
-def prepare_dataset(words, df):
-    df = df[100:110]
+def prepare_dataset(words, data):
+    # data = data[100:110]
     print(words['Word'].tolist())
 
-    for word in words['Word'].tolist():
-        df[word] = df['Review'].apply(str.count, args=[word])
+    for index, word in words.iterrows():
+        data[word['Word']] = data['Review'].apply(str.count, args=[word['Word']]) * word['Weight']
 
-    # for index, data in df[-10:].iterrows():
-    #     result_set = result_set.append([]+[data['Review'].count(word) for word in words] + [data['Sex']],
-    #                                    ignore_index=True)
-    return df
+    return data
 
 
 def parse_and_write_words():
@@ -98,8 +95,8 @@ def tf_idf(word):
 
 words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
 
-# dataset = prepare_dataset(words_from[:100], df)
-# dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
-#                        axis=1)
+dataset = prepare_dataset(words_wieghted[:100], df)
+dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
+                       axis=1)
 
-print(words_wieghted[words_wieghted['Weight'] == 0])
+print(dataset)
