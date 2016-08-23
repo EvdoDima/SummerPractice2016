@@ -54,10 +54,8 @@ def parse_and_write_words():
     words_df.to_csv('out/words.csv')
 
 
-
 def get_and_weight_words():
     words_from = pd.DataFrame.from_csv('out/words.csv')
-    # words_from["Weight"] = tf_idf(words_from)
     words_from["Weight"] = words_from.apply(tf_idf, axis=1)
     words_from["Weight_Abs"] = words_from['Weight'].apply(abs)
     # scaler = preprocessing.MaxAbsScaler()
@@ -72,8 +70,6 @@ df['Review'] = df['Comments'] + ' ' + df['Side Effects']
 df = df.drop(['Date Added'], axis=1)
 df = df.dropna()
 df['Review'] = df['Comments'] + ' ' + df['Side Effects']
-
-
 
 m_rev = df[df['Sex'] == 'M']['Review']
 f_rev = df[df['Sex'] == 'F']['Review']
@@ -106,4 +102,4 @@ words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
 # dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
 #                        axis=1)
 
-print(words_wieghted[::100])
+print(words_wieghted[words_wieghted['Weight'] == 0])
