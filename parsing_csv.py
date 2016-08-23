@@ -39,6 +39,7 @@ def prepare_dataset(words, data):
     print(words['Word'].tolist())
 
     for index, word in words.iterrows():
+        print(word['Word'], word['Weight'])
         data[word['Word']] = data['Review'].apply(str.count, args=[word['Word']]) * word['Weight']
 
     return data
@@ -95,7 +96,7 @@ def tf_idf(word):
 
 words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
 
-dataset = prepare_dataset(words_wieghted[:100], df)
+dataset = prepare_dataset(words_wieghted[(abs(words_wieghted['Weight']) > 0.1) & (words_wieghted['Count'] > 1000)], df)
 dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
                        axis=1)
 
