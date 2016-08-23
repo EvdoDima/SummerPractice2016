@@ -44,6 +44,18 @@ def prepare_dataset(words, data):
     return data.drop('Age', axis=1)
 
 
+def write_dataset():
+    words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
+    MIN_WEIGHT = 0.1
+    MIN_COUNT = 1000
+    dataset = prepare_dataset(
+        words_wieghted[(abs(words_wieghted['Weight']) > MIN_WEIGHT) & (words_wieghted['Count'] > MIN_COUNT)],
+        df)
+    dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
+                           axis=1)
+    dataset.to_csv('out/dataset.csv')
+
+
 def parse_and_write_words():
     words = count_words(df)
     words_df = pd.DataFrame(words)
@@ -92,16 +104,7 @@ def tf_idf(word):
     print(res)
     return res
 
+dataset = pd.DataFrame.from_csv('out/dataset.csv')
 
-words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
 
-MIN_WEIGHT = 0.1
-MIN_COUNT = 1000
-
-dataset = prepare_dataset(
-    words_wieghted[(abs(words_wieghted['Weight']) > MIN_WEIGHT) & (words_wieghted['Count'] > MIN_COUNT)],
-    df)
-dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
-                       axis=1)
-
-print(dataset)
+print(dataset.head())
