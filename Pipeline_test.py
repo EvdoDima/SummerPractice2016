@@ -4,12 +4,13 @@ from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
 from sklearn.metrics import classification_report
+from sklearn import linear_model
 import os, re, functools
 
 
 def parse_csv_dir(dir):
     data = pd.DataFrame()
-    for i in os.listdir(dir)[::10]:
+    for i in os.listdir(dir):
         print(i)
         new_data = pd.DataFrame.from_csv(dir + i)
         new_data = process_drug(new_data)
@@ -47,7 +48,7 @@ X = dataset['Review']
 
 clf = Pipeline([('vect', CountVectorizer()),
                 ('tf-idf', TfidfTransformer()),
-                ('clf', MultinomialNB())
+                ('clf', linear_model.LogisticRegression())
                 ])
 
 clf.fit(X, y)
