@@ -58,6 +58,10 @@ def prepare_dataset(words, bigrams, data):
     # data = data[100:110]
     print(len(words))
     print(len(bigrams))
+
+    man = data[data["Sex"] == 'M']
+    woman = data[data["Sex"] == 'F'].sample(len(man))
+    data = woman.append(man).sample(frac=1)
     data['Review'] = data['Review'].apply(str.replace, args=["[^a-zA-Z']|_", " "])
 
     print('adding words...')
@@ -73,15 +77,16 @@ def prepare_dataset(words, bigrams, data):
 
 
 def write_dataset(df):
-    DATASET_LENGTH = 15000
+    DATASET_LENGTH = 100000
     df = df.sample(DATASET_LENGTH)
     words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
     bigrams_weighted = pd.DataFrame.from_csv('out/weighted_bigrams.csv')
-    MIN_WEIGHT_WORD = 1
-    MIN_COUNT_WORD = 3
+    MIN_WEIGHT_WORD = 0.3
+    MIN_COUNT_WORD = 100
 
-    MIN_WEIGHT_Bi = 1.7
-    MIN_COUNT_Bi = 2
+    MIN_WEIGHT_Bi = 0.3
+    MIN_COUNT_Bi = 500
+
     dataset = prepare_dataset(
         words_wieghted[
             (abs(words_wieghted['Weight']) >= MIN_WEIGHT_WORD) & (words_wieghted['Count'] >= MIN_COUNT_WORD)],
@@ -90,12 +95,6 @@ def write_dataset(df):
         df)
     dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
                            axis=1)
-
-    woman = dataset[dataset["Sex"] == 'F']
-    man = dataset[dataset["Sex"] == 'M']
-    count = min(len(woman),len(man))
-    dataset = woman.sample(count).append(man.sample(count)).sample(frac=1)
-    print(len(woman), len(man),len(dataset))
 
     print('writing file...')
     dataset.to_csv('out/dataset.csv')
