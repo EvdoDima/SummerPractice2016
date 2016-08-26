@@ -1,5 +1,5 @@
 import pandas as pd
-import os, time, operator, re, math,string
+import os, time, operator, re, math, string
 from sklearn import preprocessing
 
 input_dir = 'out/drugs/'
@@ -73,7 +73,7 @@ def prepare_dataset(words, bigrams, data):
 
 
 def write_dataset(df):
-    DATASET_LENGTH = 6000
+    DATASET_LENGTH = 15000
     df = df.sample(DATASET_LENGTH)
     words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
     bigrams_weighted = pd.DataFrame.from_csv('out/weighted_bigrams.csv')
@@ -89,7 +89,14 @@ def write_dataset(df):
             (abs(bigrams_weighted['Weight']) >= MIN_WEIGHT_Bi) & (bigrams_weighted['Count'] >= MIN_COUNT_Bi)],
         df)
     dataset = dataset.drop(['Rating', 'Reason', 'Side Effects', 'Comments', 'Duration/Dosage', 'Drug Name', 'Review'],
-                           axis=1).sample(DATASET_LENGTH)
+                           axis=1)
+
+    woman = dataset[dataset["Sex"] == 'F']
+    man = dataset[dataset["Sex"] == 'M']
+    count = min(len(woman),len(man))
+    dataset = woman.sample(count).append(man.sample(count)).sample(frac=1)
+    print(len(woman), len(man),len(dataset))
+
     print('writing file...')
     dataset.to_csv('out/dataset.csv')
     print(dataset.columns)
