@@ -1,8 +1,10 @@
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
-import os, re
+from sklearn.metrics import classification_report
+import os, re, functools
 
 
 def parse_csv_dir(dir):
@@ -24,12 +26,15 @@ def prepare_data(dir):
     men = data[data['Sex'] == 'M']
     women = data[data['Sex'] == 'F'].sample(len(men))
     data = men.append(women)
-    regex = re.compile("([^a-zA-Z']|_)")
+    # regex = re.compile("([^a-zA-Z']|_)")
 
     data['Review'] = data['Side Effects'] + " " + data['Comments']
     data['Review'] = data['Review'].apply(str.lower)
 
-    # data['Review'] = data['Review'].apply(re.sub, args={'pattern': regex, 'repl': " "}) #какая то фигня
+    def replace_non_letters(word):
+        return re.sub("([^a-zA-Z']|_)", " ", word)
+
+    data['Review'] = data['Review'].apply(replace_non_letters)
 
     print(data['Review'])
     return data
@@ -40,10 +45,14 @@ dataset = dataset.dropna()
 y = dataset['Sex']
 X = dataset['Review']
 
-data_transformer = Pipeline([('vect', CountVectorizer()),
-                             ('tf-idf', TfidfTransformer())
-                             ])
+clf = Pipeline([('vect', CountVectorizer()),
+                ('tf-idf', TfidfTransformer()),
+                ('clf', MultinomialNB())
+                ])
 
-dataset = data_transformer.fit_transform(X, y)
+clf.fit(X, y)
 
-print(data_transformer.named_steps['vect'].get_stop_words())
+predicted = clf.predict(X)
+report = classification_report(y, predicted, target_names=["F", "M"])
+
+print(report)
