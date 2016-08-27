@@ -1,4 +1,4 @@
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 import pandas as pd
@@ -51,25 +51,20 @@ def prepare_data(data):
 data = pd.DataFrame.from_csv("out/data.csv")
 dataset = prepare_data(data)
 
-y = dataset['Sex']
-X = dataset['Review']
-X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
 
-clf = Pipeline([('vect', CountVectorizer()),
-                ('tf-idf', TfidfTransformer()),
-                ('clf', MultinomialNB())
+clf = Pipeline([('vect', TfidfVectorizer(ngram_range=(1,2))),
+                ('clf', linear_model.LogisticRegression(n_jobs=-1))
                 ])
 
-clf.fit(X_train, y_train)
-
-predicted = clf.predict(X_test)
-report = classification_report(y_test, predicted, target_names=["F", "M"])
+y = dataset['Sex']
+X = dataset['Review']
 
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.1)
 clf.fit(X_train, y_train)
 y_pred = clf.predict(X_test)
 report = metrics.classification_report(y_test, y_pred, target_names=["F", "M"])
-print(report, metrics.accuracy_score(y_test, y_pred))
+print(report)
+print(metrics.accuracy_score(y_test, y_pred))
 
 
 # cross-validation
