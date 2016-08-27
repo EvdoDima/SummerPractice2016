@@ -3,8 +3,9 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
-from sklearn.metrics import classification_report
-from sklearn import linear_model
+from sklearn import metrics
+from sklearn import cross_validation
+from sklearn import linear_model, preprocessing
 import os, re, functools
 
 
@@ -26,8 +27,13 @@ def prepare_data(dir):
     data = parse_csv_dir(dir).dropna()
     men = data[data['Sex'] == 'M']
     women = data[data['Sex'] == 'F'].sample(len(men))
-    data = men.append(women)
+    data = men.append(women).sample(frac=1) # reshuffle reviews, just in case. 
     # regex = re.compile("([^a-zA-Z']|_)")
+
+    def numify_sex(gender):
+        return 0 if gender == "F" else 1
+
+    data['Sex'] = data['Sex'].apply(numify_sex)
 
     data['Review'] = data['Side Effects'] + " " + data['Comments']
     data['Review'] = data['Review'].apply(str.lower)
@@ -51,9 +57,16 @@ clf = Pipeline([('vect', CountVectorizer()),
                 ('clf', linear_model.LogisticRegression())
                 ])
 
-clf.fit(X, y)
 
-predicted = clf.predict(X)
-report = classification_report(y, predicted, target_names=["F", "M"])
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.1)
+clf.fit(X_train, y_train)
 
+y_pred = clf.predict(X_test)
+report = metrics.classification_report(y_test, y_pred, target_names=["F", "M"])
 print(report)
+
+
+# cross-validation
+# scores = cross_validation.cross_val_score(clf, X, y, cv=5)
+# print(scores)
+# print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
