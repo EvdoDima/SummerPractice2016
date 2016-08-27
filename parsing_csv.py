@@ -136,7 +136,7 @@ def get_and_weight_bigrams():
 
 
 def load_df():
-    df = pd.DataFrame.from_csv('out/merged_input.csv', parse_dates=False)
+    df = pd.DataFrame.from_csv('out/data.csv', parse_dates=False)
     df['Review'] = df['Comments'] + ' ' + df['Side Effects']
 
     df = df.drop(['Date Added'], axis=1)

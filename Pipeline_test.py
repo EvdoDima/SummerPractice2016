@@ -4,7 +4,7 @@ from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
 from sklearn.metrics import classification_report
-from sklearn import linear_model
+from sklearn import linear_model, cross_validation, svm
 import os, re, functools
 
 
@@ -22,8 +22,8 @@ def process_drug(drug_data):  # Drug processing. remove one gendered drug
     return drug_data
 
 
-def prepare_data(dir):
-    data = parse_csv_dir(dir).dropna()
+def prepare_data(data):
+    data = data.dropna()
     men = data[data['Sex'] == 'M']
     women = data[data['Sex'] == 'F'].sample(len(men))
     data = men.append(women)
@@ -36,24 +36,24 @@ def prepare_data(dir):
         return re.sub("([^a-zA-Z']|_)", " ", word)
 
     data['Review'] = data['Review'].apply(replace_non_letters)
-
-    print(data['Review'])
     return data
 
+data = pd.DataFrame.from_csv("out/data.csv")
+dataset = prepare_data(data)
 
-dataset = prepare_data('out/drugs/')
-dataset = dataset.dropna()
 y = dataset['Sex']
 X = dataset['Review']
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
+
 
 clf = Pipeline([('vect', CountVectorizer()),
                 ('tf-idf', TfidfTransformer()),
-                ('clf', linear_model.LogisticRegression())
+                ('clf', MultinomialNB())
                 ])
 
-clf.fit(X, y)
+clf.fit(X_train, y_train)
 
-predicted = clf.predict(X)
-report = classification_report(y, predicted, target_names=["F", "M"])
+predicted = clf.predict(X_test)
+report = classification_report(y_test, predicted, target_names=["F", "M"])
 
 print(report)
