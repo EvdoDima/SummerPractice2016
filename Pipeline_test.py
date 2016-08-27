@@ -61,6 +61,8 @@ X = dataset['Review']
 
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.1)
 clf.fit(X_train, y_train)
+
+print(clf.named_steps['vect'].get_feature_names())
 y_pred = clf.predict(X_test)
 report = metrics.classification_report(y_test, y_pred, target_names=["F", "M"])
 print(report)
