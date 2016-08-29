@@ -59,8 +59,8 @@ def prepare_dataset(words, bigrams, data):
     print(len(words))
     print(len(bigrams))
 
-    man = data[data["Sex"] == 'M']
-    woman = data[data["Sex"] == 'F'].sample(len(man))
+    man = data[data["Sex"] == 1]
+    woman = data[data["Sex"] == 0].sample(len(man))
     data = woman.append(man).sample(frac=1)
     data['Review'] = data['Review'].apply(str.replace, args=["[^a-zA-Z']|_", " "])
 
@@ -77,10 +77,16 @@ def prepare_dataset(words, bigrams, data):
 
 
 def write_dataset(df):
-    DATASET_LENGTH = 100000
-    df = df.sample(DATASET_LENGTH)
-    words_wieghted = pd.DataFrame.from_csv('out/weighted_words.csv')
-    bigrams_weighted = pd.DataFrame.from_csv('out/weighted_bigrams.csv')
+    # DATASET_LENGTH = 100000
+    # df = df.sample(DATASET_LENGTH)
+    words_wieghted = pd.DataFrame.from_csv('out/n-grams/weighted_words.csv')
+    bigrams_weighted = pd.DataFrame.from_csv('out/n-grams/weighted_bigrams.csv')
+    words_wieghted.sort_values('Weight_Abs', ascending=False, inplace=True)
+    bigrams_weighted.sort_values('Weight_Abs', ascending=False, inplace=True)
+
+    words_wieghted.to_csv('out/n-grams/weighted_words.csv')
+    bigrams_weighted.to_csv('out/n-grams/weighted_bigrams.csv')
+
     MIN_WEIGHT_WORD = 0.3
     MIN_COUNT_WORD = 100
 
@@ -136,7 +142,7 @@ def get_and_weight_bigrams():
 
 
 def load_df():
-    df = pd.DataFrame.from_csv('out/data.csv', parse_dates=False)
+    df = pd.DataFrame.from_csv('corpus.csv', parse_dates=False)
     df['Review'] = df['Comments'] + ' ' + df['Side Effects']
 
     df = df.drop(['Date Added'], axis=1)
@@ -147,8 +153,8 @@ def load_df():
 
 df = load_df()
 
-m_rev = df[df['Sex'] == 'M']['Review']
-f_rev = df[df['Sex'] == 'F']['Review']
+m_rev = df[df['Sex'] == 1]['Review']
+f_rev = df[df['Sex'] == 0]['Review']
 
 m_rev_len = len(m_rev)
 f_rev_len = len(f_rev)

@@ -2,17 +2,14 @@ import pandas as pd
 from sklearn import preprocessing, cross_validation, svm, linear_model, neural_network
 from sklearn.metrics import classification_report
 import numpy as np
+import os
 
-df = pd.DataFrame.from_csv('out/dataset.csv')
-
-def numify_sex(gender):
-	return 0 if gender == "F" else 1
+df = pd.DataFrame.from_csv("out/dataset.csv")
 
 
 X = np.array(df.drop('Sex', axis=1))
-X = preprocessing.scale(X)
-y = df['Sex'].apply(numify_sex)
-
+# X = preprocessing.scale(X)
+y = np.array(df['Sex'])
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
 
 print("starting training...")

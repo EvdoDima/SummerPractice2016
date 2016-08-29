@@ -11,24 +11,26 @@ from sklearn import linear_model, preprocessing
 import os, re, functools
 import numpy as np
 
-
 dataset = pd.DataFrame.from_csv("corpus.csv")
+print(len(dataset))
 
-clf = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 2), max_features=10000))
+clf = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 2), max_features=12000))
                 # ('clf', linear_model.SGDClassifier(penalty='l1',n_jobs=-1,alpha=0.0003))
-                   , ('clf', linear_model.LogisticRegression(n_jobs=-1))
+                   , ('clf', svm.SVC(kernel='gausian'))
                 ])
 
 X = dataset['Review']
 y = dataset['Sex']
 
 print("training...")
+
 # Train/test split
-# clf.fit(X, y)
+# X_train,y_train,X_test,y_test  = cross_validation.train_test_split(X,y,test_size=0.1)
+# clf.fit(X_train, y_train)
 # print(len(clf.named_steps['vect'].get_feature_names()))
 
 
-# cross-validation
+# cross-validation by Rinat
 # scores = cross_validation.cross_val_score(clf, X, y, cv=5)
 
 # K-fold CV
@@ -49,9 +51,6 @@ for train_indices, test_indices in k_fold:
     print(score)
 #
 scores = np.array(scores)
-
-
-
 
 y_pred = clf.predict(X)
 report = metrics.classification_report(y, y_pred, target_names=["F", "M"])

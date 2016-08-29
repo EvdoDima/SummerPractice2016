@@ -1,6 +1,5 @@
 import pandas as pd
-import os,re
-
+import os, re
 
 
 def parse_csv_dir_to_drugs_stat(dir):
@@ -23,7 +22,9 @@ def parse_csv_dir_to_drugs_stat(dir):
 
 
 def choose_drugs(drug_data):  # Drug processing. remove one gendered drug. get the top
-    return drug_data['Name'].values
+    top_percent = 0.1
+    return drug_data['Name'][:round(top_percent * len(drug_data))]  # top 10% drugs
+
 
 def parse_drugs():
     dir = "out/drugs/"
@@ -34,6 +35,7 @@ def parse_drugs():
         new_data = pd.DataFrame.from_csv(dir + i)
         data = data.append(new_data)
     return data
+
 
 def prepare_data():
     data = parse_drugs()
@@ -59,8 +61,8 @@ def prepare_data():
     return data
 
 
-drugs_stat = parse_csv_dir_to_drugs_stat("out/drugs/")
-drugs_stat.to_csv("drugs_stat.csv")
+# drugs_stat = parse_csv_dir_to_drugs_stat("out/drugs/")
+# drugs_stat.to_csv("drugs_stat.csv")
 # data = pd.DataFrame.from_csv("out/data.csv")
-dataset = prepare_data()
+dataset = prepare_data()[['Sex', 'Review']]
 dataset.to_csv("corpus.csv")
