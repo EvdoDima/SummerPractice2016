@@ -22,8 +22,14 @@ def parse_csv_dir_to_drugs_stat(dir):
 
 
 def choose_drugs(drug_data):  # Drug processing. remove one gendered drug. get the top
-    top_percent = 0.1
-    return drug_data['Name'][:round(top_percent * len(drug_data))]  # top 10% drugs
+    # top_percent = 0.1
+    # return drug_data['Name'][:round(top_percent * len(drug_data))]  # top 10% drugs
+
+    # criteria = drug_data['Reviews count'] > 5
+    # criteria &= drug_data['M'] / drug_data['Reviews count'] > 0.2
+    # criteria &= drug_data['M'] / drug_  data['Reviews count'] < 0.8
+    # return drug_data[criteria]['Name']
+    return drug_data['Name']
 
 
 def parse_drugs():
